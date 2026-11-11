@@ -1,0 +1,14 @@
+# Credenciais
+pass.txt
+
+# Build do NetBeans
+build/
+dist/
+
+# Configuração local do NetBeans
+nbproject/private/
+
+# IntelliJ
+.idea/
+*.iml
+out/
