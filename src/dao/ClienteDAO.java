@@ -1,6 +1,7 @@
 
 package dao;
 
+import db.DataAccessException;
 import control.Cliente;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -79,10 +80,12 @@ public static void insere(
                                 
                                 ClienteWrite.cadastros.add(p);
 			}
+
 		} catch (SQLException e) {
+			throw new DataAccessException("Erro ao listar clientes.", e);
 		}
-                
-                return ClienteWrite.cadastros;
+
+		return ClienteWrite.cadastros;
 	}    
         
         public static void atualiza(

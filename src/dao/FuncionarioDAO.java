@@ -1,6 +1,7 @@
 
 package dao;
 
+import db.DataAccessException;
 import control.Funcionario;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -73,10 +74,13 @@ public static void insere(
                                 
                                 FuncionarioWrite.cadastros.add(p);
 			}
+
 		} catch (SQLException e) {
+			throw new DataAccessException("Erro ao listar funcionários.", e);
 		}
-                
-                return FuncionarioWrite.cadastros;
+
+
+		return FuncionarioWrite.cadastros;
                 
 	}	
         

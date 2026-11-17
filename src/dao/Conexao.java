@@ -1,13 +1,13 @@
 package dao;
 
 import db.ConnectionFactory;
+import db.DataAccessException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetProvider;
-import javax.swing.JOptionPane;
 
 public class Conexao {
 
@@ -16,8 +16,7 @@ public class Conexao {
              Statement stm = con.createStatement()) {
             return stm.executeUpdate(query);
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, "Problemas com a conexão\n" + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            return 0;
+            throw new DataAccessException("Erro ao gravar no banco de dados.", ex);
         }
     }
 
@@ -29,9 +28,7 @@ public class Conexao {
             copia.populate(rs);
             return copia;
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, "Problemas com a conexão\n" + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            return null;
+            throw new DataAccessException("Erro ao consultar o banco de dados.", ex);
         }
     }
 }
-

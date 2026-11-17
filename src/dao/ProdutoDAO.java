@@ -1,5 +1,6 @@
 package dao;
 
+import db.DataAccessException;
 import control.Produto;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -67,7 +68,9 @@ public class ProdutoDAO {
                 ProdutoWrite.produtos.add(p);
 
             }
+
         } catch (SQLException e) {
+            throw new DataAccessException("Erro ao listar produtos.", e);
         }
 
         return ProdutoWrite.produtos;
@@ -153,8 +156,11 @@ public class ProdutoDAO {
                 ProdutoWrite.produtos.add(p);
 
             }
+
         } catch (SQLException e) {
+            throw new DataAccessException("Erro ao pesquisar produtos.", e);
         }
+
         return ProdutoWrite.produtos;
     }
 
@@ -183,8 +189,11 @@ public class ProdutoDAO {
                 aux += ">> \n \n \n";
                 cont++;
             }
+
         } catch (SQLException e) {
+            throw new DataAccessException("Erro ao gerar listagem de produtos.", e);
         }
+
 
         return aux;
     }
