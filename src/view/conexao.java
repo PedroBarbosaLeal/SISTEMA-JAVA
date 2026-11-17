@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 package view;
-import control.WriteFiles;
+import config.DatabaseConfig;
 import java.io.File;
 import java.io.IOException;
 import java.net.SocketException;
@@ -22,10 +22,14 @@ public class conexao extends javax.swing.JFrame {
      */
     public conexao() {
         initComponents();
-        control.ReadFiles.ler();
-        url.setText(dao.Conexao.url);
-        usr.setText(dao.Conexao.usr);
-        pass.setText(dao.Conexao.pass);
+        try {
+            DatabaseConfig config = DatabaseConfig.load();
+            url.setText(config.url());
+            usr.setText(config.user());
+            pass.setText(config.password());
+        } catch (IOException ex) {
+            jTextPane1.setText("Erro ao ler db.properties: " + ex.getMessage());
+        }
     }
 
     /**
@@ -162,13 +166,16 @@ public class conexao extends javax.swing.JFrame {
     }//GEN-LAST:event_urlActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        dao.Conexao.url = url.getText();
-        dao.Conexao.usr = usr.getText();
-        dao.Conexao.pass = pass.getText();
+        DatabaseConfig config = new DatabaseConfig(
+                url.getText(), usr.getText(), new String(pass.getPassword()));
         try {
-            jTextPane1.setText(control.WriteFiles.Write());
+            config.save();
+            dao.Conexao.url = config.url();
+            dao.Conexao.usr = config.user();
+            dao.Conexao.pass = config.password();
+            jTextPane1.setText("Configuração salva em db.properties");
         } catch (IOException ex) {
-            Logger.getLogger(conexao.class.getName()).log(Level.SEVERE, null, ex);
+            jTextPane1.setText("Erro ao salvar db.properties: " + ex.getMessage());
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 

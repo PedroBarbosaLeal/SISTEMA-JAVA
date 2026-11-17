@@ -1,8 +1,9 @@
 
 package dao;
 
-import control.ReadFiles;
+import config.DatabaseConfig;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -14,11 +15,18 @@ public class Conexao {
     public static String url="";
     public static String usr="";
     public static String pass="";
-    
-    public Conexao(){     
-        control.ReadFiles.ler();
+
+    public Conexao() {
+        try {
+            DatabaseConfig config = DatabaseConfig.load();
+            url = config.url();
+            usr = config.user();
+            pass = config.password();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Não foi possível ler db.properties", e);
+        }
     }
-    
+
     public static Connection getConnection(){
         try {
             Class.forName("org.postgresql.Driver");
