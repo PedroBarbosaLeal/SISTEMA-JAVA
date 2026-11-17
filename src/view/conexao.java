@@ -170,9 +170,6 @@ public class conexao extends javax.swing.JFrame {
                 url.getText(), usr.getText(), new String(pass.getPassword()));
         try {
             config.save();
-            dao.Conexao.url = config.url();
-            dao.Conexao.usr = config.user();
-            dao.Conexao.pass = config.password();
             jTextPane1.setText("Configuração salva em db.properties");
         } catch (IOException ex) {
             jTextPane1.setText("Erro ao salvar db.properties: " + ex.getMessage());
