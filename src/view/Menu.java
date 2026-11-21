@@ -262,6 +262,13 @@ public class Menu extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        Thread.setDefaultUncaughtExceptionHandler((thread, error) -> {
+            error.printStackTrace();
+            String texto = (error.getMessage() != null ? error.getMessage() : error.toString())
+                    + (error.getCause() != null ? "\n" + error.getCause().getMessage() : "");
+            SwingUtilities.invokeLater(() ->
+                    JOptionPane.showMessageDialog(null, texto, "Erro", JOptionPane.ERROR_MESSAGE));
+        });
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.

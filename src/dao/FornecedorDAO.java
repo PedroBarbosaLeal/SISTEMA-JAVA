@@ -1,6 +1,7 @@
 
 package dao;
 
+import db.DataAccessException;
 import control.Fornecedor;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -73,10 +74,13 @@ public static void insere(
                                 
                                 FornecedorWrite.produtos.add(p);
 			}
+
 		} catch (SQLException e) {
+			throw new DataAccessException("Erro ao listar fornecedores.", e);
 		}
-                
-                return FornecedorWrite.produtos;
+
+
+		return FornecedorWrite.produtos;
 	}
         
                 public static void atualiza(
