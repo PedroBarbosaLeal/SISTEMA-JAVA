@@ -4,7 +4,6 @@ package control;
 
 
 import javax.swing.JOptionPane;
-import model.FornecedorWrite;
 import model.FuncionarioWrite;
 import model.ProdutoWrite;
 
@@ -12,18 +11,6 @@ import model.ProdutoWrite;
 public class Valida {
 
     public static boolean testa = false;
-
-    public static void cnpj(){
-        for (int i = 0; i < FornecedorWrite.produtos.size(); i++) {
-            String cnpj = FornecedorWrite.produtos.get(i).cnpj;
-
-            if(Fornecedor.v[1] == null ? cnpj == null : Fornecedor.v[1].equals(cnpj)){
-                JOptionPane.showMessageDialog(null, "O CNPJ já existe na lista de registros");
-                testa = true;
-                break;
-            }
-        }
-    }
 
     public static void cpff(){
         for (int i = 0; i < FuncionarioWrite.cadastros.size(); i++) {
@@ -49,6 +36,3 @@ public class Valida {
         }
     }
 }
-
-
-
