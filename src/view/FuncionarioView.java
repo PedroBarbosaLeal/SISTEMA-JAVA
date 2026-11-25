@@ -6,7 +6,7 @@
 package view;
 
 import control.Funcionario;
-import model.FuncionarioWrite;
+import db.DataAccessException;
 import dao.FuncionarioDAO;
 import java.awt.Color;
 import java.sql.Connection;
@@ -19,20 +19,18 @@ import tablemodel.FuncionarioTM;
  */
 public class FuncionarioView extends javax.swing.JFrame {
 
-                //Gerador chama a class tabela e dá um nome
-                public static FuncionarioTM Modelo;
-            //..........................................
-                
-                public static int index;
-                
-            //Chama a class FuncionarioWrite e dá um nome
-                FuncionarioWrite Logica;
-            //........................................
-                Connection con;
+        private FuncionarioTM Modelo;
+        private final FuncionarioDAO dao = new FuncionarioDAO();
+        private static final String CPF_VAZIO = "   .   .   -  ";
+        Connection con;
     
         public void LoadTable(){
-        //Modelo recebe a criação de tabelas
-            Modelo = new FuncionarioTM(FuncionarioDAO.funcionario());
+            try {
+                Modelo = new FuncionarioTM(dao.listar());
+            } catch (DataAccessException e) {
+                erroBanco(e);
+                Modelo = new FuncionarioTM();
+            }
         //..................................
         
         //Seta o conteúdo de modelo na tabela local
@@ -608,35 +606,43 @@ public class FuncionarioView extends javax.swing.JFrame {
     }//GEN-LAST:event_jbNovoActionPerformed
 
     private void jSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jSalvarActionPerformed
-        LogicView();
         salvar();
-        FuncionarioDAO.atualiza(Funcionario.v[0], Funcionario.v[1], Funcionario.v[2], Funcionario.v[3], Funcionario.v[4], Funcionario.v[5], Funcionario.v[6], Funcionario.v[7], Funcionario.v[8], Funcionario.v[9], Funcionario.v[10], Funcionario.v[11], Funcionario.v[12]);
     }//GEN-LAST:event_jSalvarActionPerformed
 
     private void jExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jExcluirActionPerformed
-        
+        int resposta = JOptionPane.showConfirmDialog(null,
+                "Isso apaga TODOS os funcionários do banco. Deseja continuar?",
+                "Limpar tabela", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (resposta != JOptionPane.YES_OPTION) {
+            return;
+        }
+        try {
+            dao.excluirTodos();
+        } catch (DataAccessException e) {
+            erroBanco(e);
+            return;
+        }
         jEdit.setEnabled(false);
         jExcluir.setEnabled(false);
         jCLinha.setEnabled(false);
-        
         Modelo.limpar();
-
-        while (FuncionarioWrite.cadastros.size() > 0) {
-            FuncionarioWrite.cadastros.clear();
-        }
         limpar();
-        
-        FuncionarioDAO.cleartable();
+
     }//GEN-LAST:event_jExcluirActionPerformed
 
     private void jCLinhaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCLinhaActionPerformed
-        index = jTabela.getSelectedRow();
-        FuncionarioDAO.clearRow();
-        
-        Modelo.remove(index);
-        FuncionarioWrite.cadastros.remove(index);
+        int linha = jTabela.getSelectedRow();
+        if (linha < 0) {
+            return;
+        }
+        try {
+            dao.excluir(Modelo.getFuncionario(linha).id);
+        } catch (DataAccessException e) {
+            erroBanco(e);
+            return;
+        }
+        Modelo.remove(linha);
         limpar();
-
         jExcluir.setEnabled(false);
         jCLinha.setEnabled(false);
         jEdit.setEnabled(false);
@@ -677,34 +683,47 @@ public class FuncionarioView extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jNomeActionPerformed
 
-    
-    public void LogicView(){
-            Funcionario.v[0] = jNome.getText();
-            Funcionario.v[1] = jCpf.getText();
-            Funcionario.v[2] = jEmail.getText();
-            Funcionario.v[3] = jFone.getText();
-            Funcionario.v[4] = jIdade.getText();         
-            Funcionario.v[5] = jSalario.getText();
-            Funcionario.v[6] = jCelular.getText();
-            Funcionario.v[7] = jNumero.getText();
-            Funcionario.v[8] = jcData.getText();
-            Funcionario.v[9] = jDepartamento.getText();
-            Funcionario.v[10] = jFuncao.getText();
-            Funcionario.v[11] = jObservacao.getText();
-            
-            if (jrMasculino.isSelected()) {
-                Funcionario.v[12] = "Masculino";
-                jrMasculino.setSelected(true);
-                        
-            } else if (jrFeminino.isSelected()) {
-                Funcionario.v[12] = "Feminino";
-                jrFeminino.setSelected(true);
-                
-            } else {
-                Funcionario.v[12] = "NÃO INFORMADO";
-            }
+    public Funcionario lerFormulario() {
+        Funcionario f = new Funcionario();
+        f.nome = jNome.getText();
+        f.cpf = jCpf.getText();
+        f.email = jEmail.getText();
+        f.fone = jFone.getText();
+        f.idade = jIdade.getText();
+        f.salario = jSalario.getText();
+        f.fonec = jCelular.getText();
+        f.numero = jNumero.getText();
+        f.data = jcData.getText();
+        f.departamento = jDepartamento.getText();
+        f.funcao = jFuncao.getText();
+        f.observacao = jObservacao.getText();
+        if (jrMasculino.isSelected()) {
+            f.sexo = "Masculino";
+        } else if (jrFeminino.isSelected()) {
+            f.sexo = "Feminino";
+        } else {
+            f.sexo = "NÃO INFORMADO";
+        }
+        return f;
     }
-    
+
+    private boolean validar(Funcionario f) {
+        if (f.nome.isEmpty() || CPF_VAZIO.equals(f.cpf)) {
+            JOptionPane.showMessageDialog(null, "Nome ou CPF não inserido.",
+                    "Não é possível salvar", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        if (dao.cpfEmUso(f.cpf, f.id)) {
+            JOptionPane.showMessageDialog(null, "O CPF já existe na lista de registros");
+            return false;
+        }
+        return true;
+    }
+
+    private void erroBanco(DataAccessException e) {
+        JOptionPane.showMessageDialog(null, e.getMessage(), "Erro no banco de dados", JOptionPane.ERROR_MESSAGE);
+    }
+
     private void jIdadeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jIdadeActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jIdadeActionPerformed
@@ -722,24 +741,21 @@ public class FuncionarioView extends javax.swing.JFrame {
     }//GEN-LAST:event_jcDataActionPerformed
 
     private void jBcadastrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBcadastrarActionPerformed
-        
-        LogicView();
-        control.Valida.cpff();
-        
-        if (jNome.getText().isEmpty() || ("   .   .   -  ".equals(jCpf.getText()))) {
-            JOptionPane.showMessageDialog(null, "Nome ou CPF não inserido.", "Não é possível cadastrar", JOptionPane.ERROR_MESSAGE);
-        } else if (control.Valida.testa == false) {
-            
-            modoDep = "Excluir";
-            ManipulaInterfaceDep();
-            
-            FuncionarioDAO.insere(Funcionario.v[0], Funcionario.v[1], Funcionario.v[2], Funcionario.v[3], Funcionario.v[4], Funcionario.v[5], Funcionario.v[6], Funcionario.v[7], Funcionario.v[8], Funcionario.v[9], Funcionario.v[10], Funcionario.v[11], Funcionario.v[12]);
-            LoadTable();
-            limpar();
-             
+        Funcionario f = lerFormulario();
+        try {
+            if (!validar(f)) {
+                return;
+            }
+            dao.inserir(f);
+        } catch (DataAccessException e) {
+            erroBanco(e);
+            return;
         }
+        modoDep = "Excluir";
+        ManipulaInterfaceDep();
+        LoadTable();
+        limpar();
 
-        control.Valida.testa = false;
     }//GEN-LAST:event_jBcadastrarActionPerformed
 
     private void jTabelaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTabelaMouseClicked
@@ -757,26 +773,31 @@ public class FuncionarioView extends javax.swing.JFrame {
         Color BackGround = Color.CYAN;
     
         public void salvar(){
-         
-        if(BackGround != Color.ORANGE){
-            jTabela.setSelectionBackground(BackGround);
-        }else{
-            BackGround = jTabela.getSelectionBackground();
-        }
-        
-        if (jNome.getText().isEmpty() || ("   .   .   -  ".equals(jCpf.getText()))) {
-            JOptionPane.showMessageDialog(null, "Nome ou CPF não inserido.", "Não é possível cadastrar", JOptionPane.ERROR_MESSAGE);
-        } else {
-            
-            index = jTabela.getSelectedRow(); 
-            
-            LogicView();
-            FuncionarioWrite.salvar();
-            
+            if (BackGround != Color.ORANGE) {
+                jTabela.setSelectionBackground(BackGround);
+            } else {
+                BackGround = jTabela.getSelectionBackground();
+            }
+            int linha = jTabela.getSelectedRow();
+            if (linha < 0) {
+                return;
+            }
+            Funcionario f = lerFormulario();
+            f.id = Modelo.getFuncionario(linha).id;
+            try {
+                if (!validar(f)) {
+                    return;
+                }
+                dao.atualizar(f);
+            } catch (DataAccessException e) {
+                erroBanco(e);
+                return;
+            }
             modoDep = "Excluir";
             ManipulaInterfaceDep();
+            LoadTable();
             limpar();
-        }
+
     }
         
             public void eventTable(){
