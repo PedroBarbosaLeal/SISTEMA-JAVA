@@ -9,17 +9,19 @@ import java.awt.Color;
 import javax.swing.JOptionPane;
 import control.Produto;
 import tablemodel.ProdutoTM;
-import model.ProdutoWrite;
+import db.DataAccessException;
 import dao.ProdutoDAO;
 /**
  *
  * @author aluno
  */
 public class ProdutosView extends javax.swing.JFrame {
-            //Gerador chama a class tabela e dá um nome
-                public static ProdutoTM Modelo;
+
                 public boolean aux = true;
-                public static String escolha1 = "";
+                private ProdutoTM Modelo;
+                private final ProdutoDAO dao = new ProdutoDAO();
+                private String campoPesquisa = "";
+                private String termoPesquisa = "";
             //.........................................
                 
     public ProdutosView() {
@@ -34,15 +36,18 @@ public class ProdutosView extends javax.swing.JFrame {
             ManipulaInterfaceDep();
         //..........................................
     }
-    public static int index;
+
     
         public void LoadTable(){
-            if(aux == true){
-        //Modelo recebe a criação de tabelas
-                Modelo = new ProdutoTM(ProdutoDAO.produtos());
-        //..................................
-            }else{
-                Modelo = new ProdutoTM(ProdutoDAO.pesquisa());
+            try {
+                if (aux) {
+                    Modelo = new ProdutoTM(dao.listar());
+                } else {
+                    Modelo = new ProdutoTM(dao.pesquisar(campoPesquisa, termoPesquisa));
+                }
+            } catch (DataAccessException e) {
+                erroBanco(e);
+                Modelo = new ProdutoTM();
             }
         //Seta o conteúdo de modelo na tabela local
             jTabela.setModel(Modelo);
@@ -622,21 +627,21 @@ public class ProdutosView extends javax.swing.JFrame {
 
     private void jCLinhaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCLinhaActionPerformed
         int sen = JOptionPane.showConfirmDialog(null, "Deseja apagar essa linha?");
-        
-        if(0==sen){
-        jExcluir.setEnabled(false);
-        jCLinha.setEnabled(false);
-        jEdit.setEnabled(false);
-        index = jTabela.getSelectedRow();
-        ProdutoDAO.clearRow();
-        Modelo.remove(index);
-        ProdutoWrite.produtos.remove(index);
-        limpar();
+        int linha = jTabela.getSelectedRow();
+        if (sen == JOptionPane.YES_OPTION && linha >= 0) {
+            try {
+                dao.excluir(Modelo.getFuncionario(linha).id);
+                jExcluir.setEnabled(false);
+                jCLinha.setEnabled(false);
+                jEdit.setEnabled(false);
+                Modelo.remove(linha);
+                limpar();
+            } catch (DataAccessException e) {
+                erroBanco(e);
+            }
         }
-        
-    modoDep = "test";
-    ManipulaInterfaceDep();
-        
+        modoDep = "test";
+        ManipulaInterfaceDep();
     }//GEN-LAST:event_jCLinhaActionPerformed
 
     private void jEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jEditActionPerformed
@@ -657,31 +662,26 @@ public class ProdutosView extends javax.swing.JFrame {
     }//GEN-LAST:event_jbLimparActionPerformed
 
     private void jbCadastrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbCadastrarActionPerformed
-        
-        jCodigoProduto.setText("");
-        LoadTable();
-        
-        LogicView();
-        control.Valida.produto();
-        
-        if (jNome.getText().isEmpty() || "  /  /    ".equals(jData.getText())) {
-            JOptionPane.showMessageDialog(null, "Nome ou Data da compra não inserido.", "Não é possível cadastrar", JOptionPane.ERROR_MESSAGE);
-        } else if(control.Valida.testa == false) {
-
+        Produto p = lerFormulario();
+        if (p.nome.isEmpty() || "  /  /    ".equals(p.data_da_compra)) {
+            JOptionPane.showMessageDialog(null, "Nome ou Data da compra não inserido.",
+                    "Não é possível cadastrar", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        try {
+            dao.inserir(p);
+        } catch (DataAccessException e) {
+            erroBanco(e);
+            return;
+        }
         modoDep = "Excluir";
-        ManipulaInterfaceDep();            
-            
-        ProdutoDAO.insere(Produto.v[0], Produto.v[2], Produto.v[3], Produto.v[4], Produto.v[5], Produto.v[6], Produto.v[7], Produto.v[8], Produto.v[9], Produto.v[10]);
+        ManipulaInterfaceDep();
         aux = true;
         LoadTable();
-        
-                jLoad.setEnabled(true);
-                jPesquisar.setEnabled(true);
-                jPesquisa.setEnabled(true);
-                escolha.setEnabled(true);
-        }
-        
-        control.Valida.testa = false;
+        jLoad.setEnabled(true);
+        jPesquisar.setEnabled(true);
+        jPesquisa.setEnabled(true);
+        escolha.setEnabled(true);
     }//GEN-LAST:event_jbCadastrarActionPerformed
 
     private void jbNovoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbNovoActionPerformed
@@ -691,32 +691,27 @@ public class ProdutosView extends javax.swing.JFrame {
     }//GEN-LAST:event_jbNovoActionPerformed
 
     private void jExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jExcluirActionPerformed
-        
-        String sen = JOptionPane.showInputDialog(null, "Digite a senha:");
-        
-        if("ooo".equals(sen)){
-
+        int resposta = JOptionPane.showConfirmDialog(null,
+                "Isso apaga TODOS os produtos do banco. Deseja continuar?",
+                "Limpar tabela", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (resposta == JOptionPane.YES_OPTION) {
+            try {
+                dao.excluirTodos();
                 Modelo.limpar();
-            while (ProdutoWrite.produtos.size() > 0) {
-                ProdutoWrite.produtos.clear();
+                limpar();
+                jEdit.setEnabled(false);
+                jExcluir.setEnabled(false);
+                jCLinha.setEnabled(false);
+            } catch (DataAccessException e) {
+                erroBanco(e);
             }
-            limpar();
-            jEdit.setEnabled(false);
-            jExcluir.setEnabled(false);
-            jCLinha.setEnabled(false);
-
-            ProdutoDAO.cleartable();
-        
-        }else{JOptionPane.showMessageDialog(null, "Senha inválida");}
-        
+        }
         modoDep = "test";
         ManipulaInterfaceDep();
     }//GEN-LAST:event_jExcluirActionPerformed
 
     private void jSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jSalvarActionPerformed
-        LogicView();
-        salvar(); 
-        ProdutoDAO.atualiza(Produto.v[0], Produto.v[1], Produto.v[2], Produto.v[3], Produto.v[4], Produto.v[5], Produto.v[6], Produto.v[7], Produto.v[8], Produto.v[9], Produto.v[10]);
+        salvar();
     }//GEN-LAST:event_jSalvarActionPerformed
 
     private void jTabelaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTabelaMouseClicked
@@ -727,9 +722,8 @@ public class ProdutosView extends javax.swing.JFrame {
         jEdit.setEnabled(false);
         jCLinha.setEnabled(false);
         limpar();
-        
-        escolha1 = escolha.getSelectedItem().toString();
-        Produto.pesquisa = jPesquisa.getText().toUpperCase().trim().replace('Ç','C');
+        campoPesquisa = escolha.getSelectedItem().toString();
+        termoPesquisa = jPesquisa.getText().toUpperCase().trim().replace('Ç', 'C');
         aux = false;
         LoadTable();
     }//GEN-LAST:event_jPesquisarActionPerformed
@@ -760,15 +754,11 @@ public class ProdutosView extends javax.swing.JFrame {
     }//GEN-LAST:event_escolhaActionPerformed
 
     private void menosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menosActionPerformed
-        int quant = Integer.parseInt(jQuantidade.getText());
-        quant--;
-        jQuantidade.setText(quant+"");
+        ajustarQuantidade(-1);
     }//GEN-LAST:event_menosActionPerformed
 
     private void maisActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_maisActionPerformed
-        int quant = Integer.parseInt(jQuantidade.getText());
-        quant++;
-        jQuantidade.setText(quant+"");
+        ajustarQuantidade(1);
     }//GEN-LAST:event_maisActionPerformed
 
     private void jPrateleiraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPrateleiraActionPerformed
@@ -791,18 +781,39 @@ public class ProdutosView extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jCodigoProdutoActionPerformed
 
-    public void LogicView(){
-            Produto.v[0] = jNome.getText().toUpperCase().trim().replace('Ç','C');
-            Produto.v[1] = jCodigoProduto.getText();
-            Produto.v[2] = jValorCompra.getText().toUpperCase().trim().replace('Ç','C');
-            Produto.v[3] = jMarca.getText().toUpperCase().trim().replace('Ç','C');
-            Produto.v[4] = jData.getText();
-            Produto.v[5] = jValorVenda.getText().toUpperCase().trim().replace('Ç','C');
-            Produto.v[6] = jCategoria.getText().toUpperCase().trim().replace('Ç','C');
-            Produto.v[7] = jDescricao.getText().toUpperCase().trim().replace('Ç','C');
-            Produto.v[8] = jcFornecedor.getText().toUpperCase().trim().replace('Ç','C');
-            Produto.v[9] = jPrateleira.getText().toUpperCase().trim().replace('Ç','C');
-            Produto.v[10]= jQuantidade.getText().toUpperCase().trim().replace('Ç','C');
+    public Produto lerFormulario() {
+        Produto p = new Produto();
+        p.nome = normalizar(jNome.getText());
+        p.valor_da_compra = normalizar(jValorCompra.getText());
+        p.marca = normalizar(jMarca.getText());
+        p.data_da_compra = jData.getText();
+        p.valor_da_venda = normalizar(jValorVenda.getText());
+        p.categoria = normalizar(jCategoria.getText());
+        p.descricao = normalizar(jDescricao.getText());
+        p.fornecedor = normalizar(jcFornecedor.getText());
+        p.prateleira = normalizar(jPrateleira.getText());
+        p.quant = normalizar(jQuantidade.getText());
+        return p;
+    }
+
+    private String normalizar(String texto) {
+        return texto.toUpperCase().trim().replace('Ç', 'C');
+    }
+
+    private void ajustarQuantidade(int delta) {
+        int quant;
+        try {
+            quant = Integer.parseInt(jQuantidade.getText().trim());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Informe a quantidade como número inteiro.",
+                    "Quantidade inválida", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        jQuantidade.setText(String.valueOf(quant + delta));
+    }
+
+    private void erroBanco(DataAccessException e) {
+        JOptionPane.showMessageDialog(null, e.getMessage(), "Erro no banco de dados", JOptionPane.ERROR_MESSAGE);
     }
     
     /**
@@ -998,29 +1009,34 @@ public class ProdutosView extends javax.swing.JFrame {
         }
     }
         public Color BackGround = Color.CYAN;
-        
-            public void salvar(){
-         
-        if(BackGround != Color.ORANGE){
+
+    public void salvar() {
+        if (BackGround != Color.ORANGE) {
             jTabela.setSelectionBackground(BackGround);
-        }else{
+        } else {
             BackGround = jTabela.getSelectionBackground();
         }
-        
-        if (jNome.getText().isEmpty() || jCodigoProduto.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Nome não inserido.", "Não é possível cadastrar", JOptionPane.ERROR_MESSAGE);
-        } else {
-            
-            index = jTabela.getSelectedRow(); 
-            
-            LogicView();
-            ProdutoWrite.salvar();
-            
-            modoDep = "Excluir";
-            ManipulaInterfaceDep();
-            limpar();
+        int linha = jTabela.getSelectedRow();
+        if (linha < 0) {
+            return;
         }
-        control.Valida.testa = false;
+        Produto p = lerFormulario();
+        if (p.nome.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Nome não inserido.",
+                    "Não é possível salvar", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        p.id = Modelo.getFuncionario(linha).id;
+        try {
+            dao.atualizar(p);
+        } catch (DataAccessException e) {
+            erroBanco(e);
+            return;
+        }
+        modoDep = "Excluir";
+        ManipulaInterfaceDep();
+        LoadTable();
+        limpar();
     }
         
         public void eventTable(){
