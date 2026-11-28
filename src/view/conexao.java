@@ -5,7 +5,6 @@
  */
 package view;
 import config.DatabaseConfig;
-import java.io.File;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -187,9 +186,6 @@ public class conexao extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        String nome = (System.getProperty("user.name"));
-        control.ReadFiles.file3 = new File("C:\\\\Users\\Rogi\\AppData\\Roaming\\postgresql\\");
-        //jTextPane1.setText(local);
     }//GEN-LAST:event_jButton3ActionPerformed
 
     /**

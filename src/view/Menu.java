@@ -7,13 +7,10 @@ package view;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.plaf.metal.*;
 
 /**
  *
@@ -24,10 +21,10 @@ public class Menu extends javax.swing.JFrame {
     /**
      * Creates new form Menu
      */
-    
-    public static String inter = "";
-    
-    public Menu() throws FileNotFoundException, UnsupportedEncodingException {
+
+
+
+    public Menu() {
         initComponents();
     }
 
@@ -254,7 +251,19 @@ public class Menu extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jAlterarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jAlterarActionPerformed
-            inter = jComboBox1.getSelectedItem().toString();            
+        String tema = jComboBox1.getSelectedItem().toString();
+        for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+            if (info.getName().equals(tema)) {
+                try {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    SwingUtilities.updateComponentTreeUI(this);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(this, "Não foi possível aplicar o tema " + tema + ".");
+                }
+                return;
+            }
+        }
+        JOptionPane.showMessageDialog(this, "O tema " + tema + " não está disponível neste sistema.");
 
     }//GEN-LAST:event_jAlterarActionPerformed
 
@@ -293,17 +302,7 @@ public class Menu extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    new Menu().setVisible(true);
-                } catch (FileNotFoundException ex) {
-                    Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (UnsupportedEncodingException ex) {
-                    Logger.getLogger(Menu.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
+        java.awt.EventQueue.invokeLater(() -> new Menu().setVisible(true));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
