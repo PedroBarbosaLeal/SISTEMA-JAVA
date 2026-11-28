@@ -1,38 +1,51 @@
-# SISTEMA DE CADASTRO DE CLIENTES, ESTOQUE, FUNCIONÁRIOS E FORNECEDORES DESENVOLVIDO EM JAVA
+# SISTEMA-JAVA
 
-- Este sistema consiste em realizar o **CRUD** dos módulos de clientes, fornecedores, produtos e funcionários.
+Sistema desktop (Java Swing) de cadastro de clientes, fornecedores, funcionários e
+produtos, com PostgreSQL. Projeto original de Otavio15 (2017), refatorado como
+trabalho da disciplina Evolução e Modernização de Software (UCSAL).
 
-- Para construção deste software foi necessário a utilização da biblioteca gráfica **swing** e os conceitos de Programação Orientada a Objetos (POO).
+## Requisitos
+- JDK 17 ou superior
+- Maven 3.9 ou superior
+- PostgreSQL (o backup do exemplo é do 9.6, e funciona em versões mais novas)
 
-- Os dados são armazenados em um banco de dados postgresql.
+## Banco de dados
+1. Restaurar o backup de exemplo (banco DB_OTA):
+   pg_restore -C -d postgres BKP
+2. Aplicar as restrições (chaves primárias e UNIQUE):
+   sql/restricoes.sql
 
-- Este software foi desenvolvido em 2017, quando eu não tinha completo conhecimento em orientação a objetos. 
+## Configuração
+Copie `db.properties.example` para `db.properties` e preencha URL, usuário e senha.
+O `db.properties` não vai para o repositório.
 
-## A tela abaixo consiste no menú geral do sistema, onde é possível acessar os módulos de **produto**, **funcionários**, **fornecedores** e **clientes**. Também é possível manipular o gerenciamento das conexões com o banco de dados.
- 
-![Image of system](https://raw.githubusercontent.com/Otavio15/Sistema_em_java_2017/master/s_geral.png)
+## Como rodar
+- Testes automatizados: `mvn test`
+- Aplicação: executar a classe `view.Menu` pela IDE.
 
+## Estrutura
+control (entidades), dao (acesso ao banco), db (conexão), tablemodel, view (telas).
 
-## A tela abaixo consiste no gerenciamento da conexão com o banco de dados. Onde é possível inserir a **URL**, **usuário** e **senha** do banco de dados postgresql.
+## Telas do Sistema
 
-![Image of system](https://raw.githubusercontent.com/Otavio15/Sistema_em_java_2017/master/s_conexao.png)
+### Menu Geral
+Permite acessar os módulos de **produto**, **funcionários**, **fornecedores** e **clientes**, além do gerenciamento das conexões com o banco de dados.
 
+![Menu Geral](https://raw.githubusercontent.com/Otavio15/Sistema_em_java_2017/master/s_geral.png)
 
-## A tela abaixo consiste em um **CRUD** do módulo de clientes.
+### Gerenciamento de Conexão
+Configuração de **URL**, **usuário** e **senha** do banco de dados PostgreSQL.
 
-![Image of system](https://raw.githubusercontent.com/Otavio15/Sistema_em_java_2017/master/s_clientes.png)
+![Conexão](https://raw.githubusercontent.com/Otavio15/Sistema_em_java_2017/master/s_conexao.png)
 
+### CRUD de Clientes
+![Clientes](https://raw.githubusercontent.com/Otavio15/Sistema_em_java_2017/master/s_clientes.png)
 
-## A tela abaixo consiste em um **CRUD** do módulo de fornecedores.
+### CRUD de Fornecedores
+![Fornecedores](https://raw.githubusercontent.com/Otavio15/Sistema_em_java_2017/master/s_fornecedor.png)
 
-![Image of system](https://raw.githubusercontent.com/Otavio15/Sistema_em_java_2017/master/s_fornecedor.png)
+### CRUD de Produtos
+![Produtos](https://raw.githubusercontent.com/Otavio15/Sistema_em_java_2017/master/s_produtos.png)
 
-
-## A tela abaixo consiste em um CRUD do módulo de produtos. Neste caso há muitas informações cadastradas, para ter acesso a essa base de dados é só importar o arquivo ***BKP*** dentro da base de dados do postgres.
-
-![Image of system](https://raw.githubusercontent.com/Otavio15/Sistema_em_java_2017/master/s_produtos.png)
-
-
-## A tela abaixo consiste em um **CRUD** do módulo de funcionários.
-
-![Image of system](https://raw.githubusercontent.com/Otavio15/Sistema_em_java_2017/master/s_funcionarios.png)
+### CRUD de Funcionários
+![Funcionários](https://raw.githubusercontent.com/Otavio15/Sistema_em_java_2017/master/s_funcionarios.png)
