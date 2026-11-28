@@ -18,7 +18,7 @@ public class txtView extends javax.swing.JFrame {
      */
     public txtView() {
         initComponents();
-        txt.setText(ProdutoDAO.gerarTxt());
+        txt.setText(new ProdutoDAO().gerarTxt());
     }
 
     /**

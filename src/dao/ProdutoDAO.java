@@ -1,200 +1,110 @@
 package dao;
 
-import db.DataAccessException;
+
 import control.Produto;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import model.ProdutoWrite;
-import view.ProdutosView;
+import java.util.List;
+import java.util.Map;
 
-public class ProdutoDAO {
 
-    public static void cadastrar(Produto c) {
-//		insere(1,"Godofredo");
-//		lista();		
+public class ProdutoDAO extends GenericDAO<Produto> {
+
+
+    private static final String COLUNAS =
+            "nome, valor_da_compra, marca, valor_da_venda, categoria, descricao, fornecedor, prateleira,"
+                    + " data_da_compra, quantidade";
+
+    private static final Map<String, String> COLUNAS_PESQUISA = Map.of(
+            "Nome", "nome",
+            "Marca", "marca",
+            "Categoria", "categoria",
+            "Fornecedor", "fornecedor",
+            "Prateleira", "prateleira",
+            "Descricao", "descricao");
+
+
+    public List<Produto> listar() {
+        return consultar("SELECT id, codigo_produto, " + COLUNAS + " FROM produtos ORDER BY id");
     }
 
-    public static void insere(
-            String nome,
-            //String codigo_produto,
-            String valor_da_compra,
-            String marca,
-            String data_da_compra,
-            String valor_da_venda,
-            String categoria,
-            String descricao,
-            String fornecedor,
-            String prateleira,
-            String quant
-    ) {
-        String sql = "INSERT INTO produtos (Nome,Valor_da_compra,Marca,Valor_da_venda,Categoria,Descricao,Fornecedor,Prateleira,Data_da_compra,quantidade) VALUES ('" + nome
-                + "','" + valor_da_compra + "','" + marca + "','" + valor_da_venda
-                + "','" + categoria + "','" + descricao + "','" + fornecedor + "','" + prateleira + "','" + data_da_compra + "','" + quant + "');";
-        Conexao con = new Conexao();
 
-        int res = con.executeUpdate(sql);
-        if (res >= 1) {
-            System.out.println("Inserção realizada!");
-        } else {
-            System.err.println("Inserção NÃO realizada!");
+    public List<Produto> pesquisar(String campo, String termo) {
+        String coluna = COLUNAS_PESQUISA.get(campo);
+        if (coluna == null) {
+            throw new IllegalArgumentException("Campo de pesquisa inválido: " + campo);
         }
+        return consultar("SELECT id, codigo_produto, " + COLUNAS + " FROM produtos WHERE " + coluna
+                + " ILIKE ? ORDER BY id", "%" + termo + "%");
     }
 
-    public static ArrayList<Produto> produtos() {
-        String sql = "SELECT * FROM produtos ORDER BY nome ASC";
 
-        ProdutoWrite.produtos = new ArrayList<>();
 
-        try {
-            Conexao con = new Conexao();
-            ResultSet consulta = con.executeQuery(sql);
-            while (consulta.next()) {
-
-                Produto p = new Produto();
-
-                p.nome = consulta.getString("Nome");
-                p.codigo_produto = consulta.getString("id");
-                p.valor_da_compra = consulta.getString("Valor_da_compra");
-                p.marca = consulta.getString("Marca");
-                p.valor_da_venda = consulta.getString("Valor_da_venda");
-                p.categoria = consulta.getString("Categoria");
-                p.descricao = consulta.getString("Descricao");
-                p.fornecedor = consulta.getString("Fornecedor");
-                p.prateleira = consulta.getString("Prateleira");
-                p.data_da_compra = consulta.getString("Data_da_compra");
-                p.id = consulta.getString("id");
-                p.quant = consulta.getString("quantidade");
-                ProdutoWrite.produtos.add(p);
-
-            }
-
-        } catch (SQLException e) {
-            throw new DataAccessException("Erro ao listar produtos.", e);
-        }
-
-        return ProdutoWrite.produtos;
+    public void inserir(Produto p) {
+        executar("INSERT INTO produtos (" + COLUNAS + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                p.nome, p.valor_da_compra, p.marca, p.valor_da_venda, p.categoria, p.descricao,
+                p.fornecedor, p.prateleira, p.data_da_compra, p.quant);
     }
 
-    public static void atualiza(
-            String nome,
-            String codigo_produto,
-            String valor_da_compra,
-            String marca,
-            String data_da_compra,
-            String valor_da_venda,
-            String categoria,
-            String descricao,
-            String fornecedor,
-            String prateleira,
-            String quant
-    ) {
 
-        String sql = "UPDATE produtos SET nome = '" + nome + "',valor_da_compra = '" + valor_da_compra + "',marca = '" + marca + "',valor_da_venda = '" + valor_da_venda + "',categoria = '" + categoria + "',descricao = '" + descricao + "',fornecedor = '" + fornecedor + "',prateleira = '" + prateleira + "',data_da_compra = '" + data_da_compra + "',quantidade = '" + quant + "' WHERE id = '" + Produto.id + "' ;";
-
-        Conexao con = new Conexao();
-
-        int res = con.executeUpdate(sql);
-        if (res >= 1) {
-            System.out.println("Inserção realizada!");
-        } else {
-            System.err.println("Inserção NÃO realizada!");
-        }
+    public void atualizar(Produto p) {
+        executar("UPDATE produtos SET nome = ?, valor_da_compra = ?, marca = ?, valor_da_venda = ?,"
+                        + " categoria = ?, descricao = ?, fornecedor = ?, prateleira = ?, data_da_compra = ?,"
+                        + " quantidade = ? WHERE id = ?",
+                p.nome, p.valor_da_compra, p.marca, p.valor_da_venda, p.categoria, p.descricao,
+                p.fornecedor, p.prateleira, p.data_da_compra, p.quant, p.id);
     }
 
-    public static void cleartable() {
-        String sql = "delete from produtos";
 
-        Conexao con = new Conexao();
-
-        int res = con.executeUpdate(sql);
-        if (res >= 1) {
-            System.out.println("Inserção realizada!");
-        } else {
-            System.err.println("Inserção NÃO realizada!");
-        }
+    public void excluir(int id) {
+        executar("DELETE FROM produtos WHERE id = ?", id);
     }
 
-    public static void clearRow() {
-        Produto.id = ProdutoWrite.produtos.get(ProdutosView.index).codigo_produto;
-        String sql = "delete from produtos WHERE id = '" + Produto.id + "' ;";
 
-        Conexao con = new Conexao();
-
-        int res = con.executeUpdate(sql);
-        if (res >= 1) {
-            System.out.println("Inserção realizada!");
-        } else {
-            System.err.println("Inserção NÃO realizada!");
-        }
+    public void excluirTodos() {
+        executar("DELETE FROM produtos");
     }
 
-    public static ArrayList<Produto> pesquisa() {
-        String sql = "SELECT * FROM produtos WHERE " + ProdutosView.escolha1 + " like '%" + Produto.pesquisa + "%' ;";
 
-        ProdutoWrite.produtos = new ArrayList<>();
 
-        try {
-            Conexao con = new Conexao();
-            ResultSet consulta = con.executeQuery(sql);
-            while (consulta.next()) {
-
-                Produto p = new Produto();
-
-                p.nome = consulta.getString("Nome");
-                p.codigo_produto = consulta.getString("id");
-                p.valor_da_compra = consulta.getString("Valor_da_compra");
-                p.marca = consulta.getString("Marca");
-                p.valor_da_venda = consulta.getString("Valor_da_venda");
-                p.categoria = consulta.getString("Categoria");
-                p.descricao = consulta.getString("Descricao");
-                p.fornecedor = consulta.getString("Fornecedor");
-                p.prateleira = consulta.getString("Prateleira");
-                p.data_da_compra = consulta.getString("Data_da_compra");
-                p.id = consulta.getString("id");
-                p.quant = consulta.getString("quantidade");
-                ProdutoWrite.produtos.add(p);
-
-            }
-
-        } catch (SQLException e) {
-            throw new DataAccessException("Erro ao pesquisar produtos.", e);
+    public String gerarTxt() {
+        StringBuilder txt = new StringBuilder();
+        int cont = 1;
+        for (Produto p : consultar("SELECT id, codigo_produto, " + COLUNAS + " FROM produtos ORDER BY nome ASC")) {
+            txt.append("<< ").append(cont).append(" \n");
+            txt.append("Nome: ").append(p.nome).append("\n");
+            txt.append("Código: ").append(p.codigo_produto).append("\n");
+            txt.append("Valor da compra: ").append(p.valor_da_compra).append("\n");
+            txt.append("Marca: ").append(p.marca).append("\n");
+            txt.append("Valor da venda: ").append(p.valor_da_venda).append("\n");
+            txt.append("Categoria: ").append(p.categoria).append("\n");
+            txt.append("Descrição: ").append(p.descricao).append("\n");
+            txt.append("Fornecedor: ").append(p.fornecedor).append("\n");
+            txt.append("Prateleira: ").append(p.prateleira).append("\n");
+            txt.append("Data da compra: ").append(p.data_da_compra).append("\n");
+            txt.append("Quantidade: ").append(p.quant).append("\n");
+            txt.append(">> \n \n \n");
+            cont++;
         }
-
-        return ProdutoWrite.produtos;
+        return txt.toString();
     }
 
-    public static String gerarTxt() {
-        String sql = "SELECT * FROM produtos ORDER BY nome ASC";
-        String aux = "";
 
-        try {
-            Conexao con = new Conexao();
-            ResultSet consulta = con.executeQuery(sql);
-            int cont = 1;
-            while (consulta.next()) {
-                aux += "<< "+cont+" \n";
-                aux += "Nome: "+consulta.getString("Nome") + "\n";
-                aux += "id: "+consulta.getString("id") + "\n";
-                aux += "Valor da compra:"+consulta.getString("Valor_da_compra") + "\n";
-                aux += "Marca: "+consulta.getString("Marca") + "\n";
-                aux += "Valor da venda: "+consulta.getString("Valor_da_venda") + "\n";
-                aux += "Categoria: "+consulta.getString("Categoria") + "\n";
-                aux += "Descricao: "+consulta.getString("Descricao") + "\n";
-                aux += "Fornecedor: "+consulta.getString("Fornecedor") + "\n";
-                aux += "Prateleira: "+consulta.getString("Prateleira") + "\n";
-                aux += "Data_da_compra: "+consulta.getString("Data_da_compra") + "\n";
-                aux += "id: "+consulta.getString("id") + "\n";
-                aux += "Quantidade: "+consulta.getString("quantidade") + "\n";
-                aux += ">> \n \n \n";
-                cont++;
-            }
-
-        } catch (SQLException e) {
-            throw new DataAccessException("Erro ao gerar listagem de produtos.", e);
-        }
-
-
-        return aux;
+    @Override
+    protected Produto mapear(ResultSet rs) throws SQLException {
+        Produto p = new Produto();
+        p.id = rs.getInt("id");
+        p.codigo_produto = rs.getString("codigo_produto");
+        p.nome = rs.getString("nome");
+        p.valor_da_compra = rs.getString("valor_da_compra");
+        p.marca = rs.getString("marca");
+        p.valor_da_venda = rs.getString("valor_da_venda");
+        p.categoria = rs.getString("categoria");
+        p.descricao = rs.getString("descricao");
+        p.fornecedor = rs.getString("fornecedor");
+        p.prateleira = rs.getString("prateleira");
+        p.data_da_compra = rs.getString("data_da_compra");
+        p.quant = rs.getString("quantidade");
+        return p;
     }
 }
