@@ -1,17 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package control;
 
-/**
- *
- * @author FERNANDO ROGI
- */
+
 public class Funcionario {
 
-    public static String v[] = new String[14];
+    public int id;
     public String nome;
     public String cpf;
     public String email;
@@ -25,52 +17,18 @@ public class Funcionario {
     public String funcao;
     public String observacao;
     public String sexo;
-     public static String id = "0";
-    
-    public Funcionario(){}
-    
-    public Funcionario(
-    
-    String nome,
-    String cpf,
-    String email,
-    String fone,
-    String idade,
-    String salario,
-    String fonec,
-    String numero,
-    String data,
-    String departamento,
-    String funcao,
-    String obcervacao,
-    String sexo,
-    String id
-            
-    ){
-    this.nome = nome;
-    this.cpf = cpf;
-    this.email = email;
-    this.fone = fone;
-    this.idade = idade;
-    this.salario = salario;
-    this.fonec = fonec;
-    this.numero = numero;
-    this.data = data;
-    this.departamento = departamento;
-    this.funcao = funcao;
-    this.observacao = obcervacao;
-    this.sexo = sexo;
-    this.id = id;
+
+    public Funcionario() {
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
-    
+
     public String getNome() {
         return nome;
     }
@@ -98,7 +56,7 @@ public class Funcionario {
     public String getFone() {
         return fone;
     }
-    
+
     public void setFone(String fone) {
         this.fone = fone;
     }
@@ -122,15 +80,15 @@ public class Funcionario {
     public String getFonec() {
         return fonec;
     }
-    
-    public void setFonec(String fonec){
+
+    public void setFonec(String fonec) {
         this.fonec = fonec;
     }
-    
-    public String getNumero(){
+
+    public String getNumero() {
         return numero;
     }
-    
+
     public void setNumero(String numero) {
         this.numero = numero;
     }
@@ -174,5 +132,4 @@ public class Funcionario {
     public void setSexo(String sexo) {
         this.sexo = sexo;
     }
-
 }
